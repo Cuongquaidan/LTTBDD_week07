@@ -19,7 +19,11 @@ const App = () => {
                     component={Edit}
                     options={{ headerShown: false }}
                 ></Stack.Screen>
-                <Stack.Screen name="Add" component={Add}></Stack.Screen>
+                <Stack.Screen
+                    name="Add"
+                    component={Add}
+                    options={{ headerShown: false }}
+                ></Stack.Screen>
             </Stack.Navigator>
         </NavigationContainer>
     );

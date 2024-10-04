@@ -6,29 +6,52 @@ import {
     Image,
     Pressable,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import NoteItem from "./components/NoteItem";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useFocusEffect } from "@react-navigation/native";
 const Edit = ({ navigation, route }) => {
     const name = route.params.name;
     const [data, setData] = useState(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(
-                    `https://66f5f8bb436827ced97590b0.mockapi.io/api/v1/notes/${name}`
-                );
-                if (!response.ok) throw new Error("Fetch notes failed");
-                const notes = await response.json();
-                setData(notes);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchData();
-    }, [name]);
+    const fetchData = async () => {
+        try {
+            const response = await fetch(
+                `https://66f5f8bb436827ced97590b0.mockapi.io/api/v1/notes/${name}`
+            );
+            if (!response.ok) throw new Error("Fetch notes failed");
+            const notes = await response.json();
+            setData(notes);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchData();
+        }, [name])
+    );
+    const handleRemove = async (selectedID) => {
+        const updatedNotes = data.notes.filter((item) => item.id != selectedID);
+        try {
+            const response = await fetch(
+                `https://66f5f8bb436827ced97590b0.mockapi.io/api/v1/notes/${name}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ notes: updatedNotes }),
+                }
+            );
+            if (!response) throw new Error("Delete fail");
+            setData({ ...data, notes: updatedNotes });
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
     return (
         <SafeAreaView>
@@ -45,7 +68,6 @@ const Edit = ({ navigation, route }) => {
                         navigation.navigate("Home");
                     }}
                 >
-                    {" "}
                     <MaterialIcons
                         name="keyboard-backspace"
                         size={24}
@@ -55,7 +77,6 @@ const Edit = ({ navigation, route }) => {
                 <View
                     style={{ display: "flex", flexDirection: "row", gap: 10 }}
                 >
-                    {" "}
                     <Image
                         source={{
                             uri: "https://images.pexels.com/photos/28210177/pexels-photo-28210177/free-photo-of-phong-c-nh-thien-nhien-mua-he-thu-v-t.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
@@ -74,12 +95,33 @@ const Edit = ({ navigation, route }) => {
             </View>
             <ScrollView>
                 <View>
-                    {data?.notes?.map((item) => (
-                        <NoteItem note={item} key={item.id} />
-                    ))}
+                    {data &&
+                        data?.notes?.map((item, index) => (
+                            <NoteItem
+                                note={item}
+                                key={index}
+                                handleRemove={() => handleRemove(item.id)}
+                                handleEdit={() => {
+                                    navigation.navigate("Add", {
+                                        name: name,
+                                        notes: data.notes,
+                                        note: item,
+                                    });
+                                }}
+                            />
+                        ))}
+                    {!data && <Text>Không có dữ liệu</Text>}
                 </View>
             </ScrollView>
-            <Pressable style={{ marginTop: 60, marginHorizontal: "auto" }}>
+            <Pressable
+                style={{ marginTop: 60, marginHorizontal: "auto" }}
+                onPress={() =>
+                    navigation.navigate("Add", {
+                        name: name,
+                        notes: data.notes,
+                    })
+                }
+            >
                 <Ionicons name="add-circle-sharp" size={80} color="#00BDD6" />
             </Pressable>
         </SafeAreaView>

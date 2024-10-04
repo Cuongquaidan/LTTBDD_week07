@@ -1,7 +1,7 @@
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import React from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
-const NoteItem = ({ note, ...props }) => {
+const NoteItem = ({ note, handleEdit, handleRemove, ...props }) => {
     return (
         <View
             {...props}
@@ -9,8 +9,9 @@ const NoteItem = ({ note, ...props }) => {
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "space-between",
-                width: 400,
+                minWidth: 300,
                 marginHorizontal: "auto",
+                width: "50%",
                 backgroundColor: "#ddd",
                 marginTop: 20,
                 borderRadius: 10,
@@ -24,8 +25,12 @@ const NoteItem = ({ note, ...props }) => {
                 </Text>
             </View>
             <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-                <AntDesign name="delete" size={24} color="red" />
-                <AntDesign name="edit" size={24} color="yellow" />
+                <Pressable onPress={handleRemove}>
+                    <AntDesign name="delete" size={24} color="red" />
+                </Pressable>
+                <Pressable onPress={handleEdit}>
+                    <AntDesign name="edit" size={24} color="yellow" />
+                </Pressable>
             </View>
         </View>
     );
